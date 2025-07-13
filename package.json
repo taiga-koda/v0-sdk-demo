@@ -1,12 +1,12 @@
 {
-  "name": "v0-sdk-mui-demo",
+  "name": "v0-sdk-ui-framework-demo",
   "version": "0.1.0",
   "private": true,
-  "description": "Demo: AI-powered Material-UI component generation with v0-sdk",
-  "keywords": ["v0-sdk", "material-ui", "mui", "nextjs", "react", "ai", "component-generation"],
+  "description": "Demo: AI-powered UI framework-specific component generation with v0-sdk",
+  "keywords": ["v0-sdk", "ui-frameworks", "material-ui", "tailwind", "chakra-ui", "nextjs", "react", "ai", "component-generation"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/v0-sdk-mui-demo.git"
+    "url": "https://github.com/taiga-koda/v0-sdk-demo.git"
   },
   "license": "MIT",
   "scripts": {

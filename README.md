@@ -1,4 +1,4 @@
-# V0 SDK MUI Demo
+# V0 SDK UI Framework Demo
 
 **🎯 v0-sdk specialized for UI framework-specific component generation**
 
@@ -37,8 +37,8 @@ This project demonstrates how to use [v0-sdk](https://www.npmjs.com/package/v0-s
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/v0-sdk-mui-demo.git
-   cd v0-sdk-mui-demo
+   git clone https://github.com/taiga-koda/v0-sdk-demo.git
+   cd v0-sdk-demo
    ```
 
 2. **Install dependencies**

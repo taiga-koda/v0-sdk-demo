@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: "V0 SDK MUI Demo - Component Generator",
-  description: "Demo: AI-powered MUI component generation with v0-sdk",
+  title: "V0 SDK UI Framework Demo - Component Generator",
+  description: "Demo: AI-powered UI framework-specific component generation with v0-sdk",
 };
 
 export default function RootLayout({

@@ -94,7 +94,7 @@ export default function Home() {
       <AppBar position="static" sx={{ mb: 4 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            V0 SDK MUI Demo
+            V0 SDK UI Demo
           </Typography>
           <Button 
             color="inherit" 
@@ -109,7 +109,7 @@ export default function Home() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box textAlign="center" mb={6}>
           <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-            V0 SDK MUI Demo
+            V0 SDK UI Framework Demo
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
             AI-powered UI component generation with v0-sdk
