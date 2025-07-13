@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v0 } from 'v0-sdk';
+import { buildEnhancedPrompt, getSystemMessage, isValidFramework } from '@/lib/prompt-builder';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,21 +13,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const enhancedPrompt = `IMPORTANT: You must use Material-UI (MUI) components only. Do not use any other UI library.
-
-Create a React component for: ${prompt}
-
-Requirements:
-- Use only @mui/material components (Box, Typography, Button, TextField, Paper, etc.)
-- Import from '@mui/material' only
-- Follow Material Design principles
-- Include proper TypeScript types
-- Make it responsive using MUI's sx prop and breakpoints
-- Use MUI's theme system for colors and spacing
-- No Tailwind CSS, no plain HTML elements for styling
-
-Example imports:
-import { Box, Typography, Button, TextField, Paper } from '@mui/material';`;
+    // Get UI framework from environment variable
+    const uiFramework = process.env.V0_UI_FRAMEWORK || 'mui';
+    
+    if (!isValidFramework(uiFramework)) {
+      return NextResponse.json(
+        { error: `Invalid UI framework: ${uiFramework}. Supported frameworks: mui, tailwind, chakra, ant-design, react-bootstrap, headless` },
+        { status: 400 }
+      );
+    }
+    
+    const enhancedPrompt = buildEnhancedPrompt(prompt, uiFramework);
 
     const chat = await v0.chats.create({
       modelConfiguration: {
@@ -34,7 +31,7 @@ import { Box, Typography, Button, TextField, Paper } from '@mui/material';`;
       },
       chatPrivacy: (process.env.V0_CHAT_PRIVACY as 'private' | 'public') || 'private',
       message: enhancedPrompt,
-      system: 'You are a React developer who ONLY uses Material-UI (MUI) components. You must never use any other UI library, Tailwind CSS, or plain HTML styling. Always import components from @mui/material and use the sx prop for styling. Follow Material Design principles strictly.',
+      system: getSystemMessage(uiFramework),
     });
 
     console.log('Chat response:', {

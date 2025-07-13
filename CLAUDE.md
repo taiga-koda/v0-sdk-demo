@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a v0-sdk based MUI component generator that uses Vercel's v0.dev API to generate Material-UI React components. The application provides a web interface for generating, previewing, and managing MUI components with AI assistance.
+This is a v0-sdk based UI framework-specific component generator that uses Vercel's v0.dev API to generate components with strict framework enforcement. The key innovation is the configurable prompt engineering system that prevents mixed UI libraries and ensures framework-consistent output.
 
 ## Essential Commands
 
@@ -15,80 +15,137 @@ This is a v0-sdk based MUI component generator that uses Vercel's v0.dev API to 
 - `npm run lint` - Run ESLint checks
 
 ### Package Manager
-This project requires npm. Yarn and pnpm have compatibility issues with React 19 and Next.js 15.
+This project requires npm exclusively. Yarn and pnpm have compatibility issues with React 19 and Next.js 15.
 
 ## Architecture
 
 ### Core Technology Stack
 - **Next.js 15.3.5** with App Router
 - **React 19** 
-- **Material-UI (MUI) v7.2.0** for all UI components
 - **v0-sdk 0.0.12** for AI component generation
-- **Emotion** for MUI styling (required for MUI SSR)
 - **TypeScript** for type safety
+- **Material-UI v7.2.0** (when V0_UI_FRAMEWORK=mui)
+- **Emotion** for MUI styling (SSR compatible)
 
-### Key Application Structure
+### UI Framework Abstraction System
+
+**Key Innovation**: Environment-driven framework selection with specialized prompt engineering.
+
+**Core Files:**
+- `src/lib/prompt-builder.ts` - Framework configuration and prompt generation
+- `src/app/api/generate/route.ts` - Main generation endpoint with framework validation
+- `src/app/api/framework/route.ts` - Framework information endpoint
+
+**Framework Support Matrix:**
+- `mui` - Material-UI with sx props and theme system
+- `tailwind` - Utility-first CSS with semantic HTML
+- `chakra` - Chakra UI component system
+- `ant-design` - Ant Design enterprise components
+- `react-bootstrap` - Bootstrap components for React
+- `headless` - Headless UI + Tailwind combination
+
+### Environment-Based Configuration
+
+**Required Environment Variables:**
+- `V0_API_KEY` - v0.dev API key (format: `v1:...`)
+- `V0_UI_FRAMEWORK` - Framework selector (default: `mui`)
+- `V0_MODEL_ID` - v0.dev model (default: `v0-1.5-sm`)
+- `V0_CHAT_PRIVACY` - Chat privacy setting (default: `private`)
+
+Copy `.env.example` to `.env.local` and configure appropriately.
+
+### Prompt Engineering System
+
+The `prompt-builder.ts` module contains framework-specific configurations with:
+- **Framework-specific imports**: Proper import statements for each framework
+- **Restrictions array**: Explicit rules preventing framework mixing
+- **System messages**: Tailored AI instructions for each framework
+- **Examples**: Framework-appropriate code samples
+
+**Key Function:**
+```typescript
+buildEnhancedPrompt(userPrompt: string, framework: UIFramework): string
+```
+
+This function transforms user prompts into framework-specific instructions that prevent mixed library usage.
+
+### v0-SDK Integration
+
+**API Endpoint Pattern:**
+```typescript
+const chat = await v0.chats.create({
+  modelConfiguration: { modelId: process.env.V0_MODEL_ID },
+  chatPrivacy: process.env.V0_CHAT_PRIVACY,
+  message: buildEnhancedPrompt(prompt, framework),
+  system: getSystemMessage(framework)
+});
+```
+
+**Response Format:**
+- `chat.demo` - Preview URL for iframe embedding
+- `chat.url` - Direct link to v0.dev chat
+- `chat.files` - Generated code files array
+- `chat.id` - Unique chat identifier
+
+### Response Data Structure
+
+v0-sdk APIs return structured data:
+- `v0.chats.find()` returns `{object: 'list', data: ChatDetail[]}`
+- `v0.projects.find()` returns `{object: 'list', data: ProjectDetail[]}`
+- Always access the `data` property for actual arrays
+
+### Application Structure
 
 **Main Pages:**
-- `/` - Component generator interface with prompt input and preview tabs
+- `/` - Component generator with framework-aware interface
 - `/projects` - Chat history from v0.dev account
 
 **API Routes:**
-- `/api/generate` - Creates new MUI components via v0.chats.create()
-- `/api/chats` - Fetches chat history via v0.chats.find()
+- `/api/generate` - Framework-specific component generation
+- `/api/chats` - Chat history via v0.chats.find()
+- `/api/framework` - Current framework configuration info
 
-### MUI Integration
-The app uses a custom Providers setup (`src/app/providers.tsx`) that wraps:
-- Emotion CacheProvider for SSR compatibility
-- MUI ThemeProvider with custom theme
-- CssBaseline for consistent styling
+### MUI-Specific Architecture (Default Framework)
 
-The emotion cache is configured in `src/lib/emotion-cache.ts` for proper SSR support.
+When `V0_UI_FRAMEWORK=mui`, the app uses:
+- **Providers Setup**: `src/app/providers.tsx` wraps Emotion CacheProvider + MUI ThemeProvider
+- **Emotion Cache**: `src/lib/emotion-cache.ts` for SSR compatibility
+- **Theme System**: Custom MUI theme with Inter font family
+- **CssBaseline**: Replaces traditional CSS resets
 
-### v0-SDK Configuration
-When calling v0.chats.create(), the following configuration is required:
-```typescript
-{
-  modelConfiguration: {
-    modelId: 'v0-1.5-sm',
-  },
-  chatPrivacy: 'private',
-  message: enhancedPrompt,
-  system: systemMessage
-}
-```
+### Framework Switching Process
 
-### Environment Variables Required
-- `V0_API_KEY` - API key for v0.dev (format: `v1:...`)
-- `V0_MODEL_ID` - v0.dev model ID (default: `v0-1.5-sm`)
-- `V0_CHAT_PRIVACY` - Chat privacy setting (default: `private`)
+1. Update `V0_UI_FRAMEWORK` in `.env.local`
+2. Restart development server
+3. All generated components will use the new framework
+4. API validates framework selection and returns appropriate errors for invalid values
 
-Copy `.env.example` to `.env.local` and configure these variables.
+### Type Safety
 
-### Component Generation Strategy
-The system enforces MUI-only usage through:
-1. Enhanced prompts that explicitly require @mui/material components
-2. System messages that prohibit other UI libraries
-3. Specific examples of proper MUI imports and sx prop usage
+Framework selection is type-safe through:
+- `UIFramework` union type in `prompt-builder.ts`
+- Runtime validation via `isValidFramework()` function
+- TypeScript compilation ensures valid framework references
 
-### Response Format
-v0-sdk APIs return structured responses:
-- `v0.chats.find()` returns `{object: 'list', data: ChatDetail[]}`
-- `v0.projects.find()` returns `{object: 'list', data: ProjectDetail[]}`
-- Always access the `data` property for the actual array
+### Error Handling
 
-### Preview System
-The app provides dual preview options:
-1. Iframe embedding of v0.dev preview URLs (may have CORS restrictions)
-2. "Open in New Tab" fallback buttons for reliable preview access
+The generate API includes comprehensive validation:
+- Prompt requirement validation
+- Framework validity checking
+- v0-sdk error propagation with detailed logging
+- Environment variable validation
 
 ## Important Implementation Notes
 
-### MUI Enforcement
-All generated components must use Material-UI exclusively. The prompt engineering specifically prohibits Tailwind CSS, plain HTML styling, and other UI frameworks.
+### Framework Enforcement Strategy
+The system prevents mixed frameworks through multiple layers:
+1. **Prompt Enhancement**: Explicit framework requirements in user prompts
+2. **System Messages**: AI instructions tailored to each framework
+3. **Import Examples**: Framework-specific import patterns
+4. **Restriction Lists**: Explicit prohibitions against other frameworks
 
-### Error Handling
-API routes include comprehensive error logging and structured error responses for debugging v0-sdk integration issues.
+### Preview System Limitations
+v0.dev preview URLs may have CORS restrictions when embedded in iframes. The app provides fallback "Open in New Tab" buttons for reliable preview access.
 
-### TypeScript Configuration
-The project uses strict TypeScript with proper typing for v0-sdk responses and MUI component props.
+### Package Manager Constraints
+React 19 + Next.js 15 + v0-sdk combination only works reliably with npm. Document this clearly to users and provide troubleshooting steps for dependency conflicts.

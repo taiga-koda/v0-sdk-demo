@@ -1,12 +1,12 @@
 {
-  "name": "v0-mui-sdk-demo",
+  "name": "v0-sdk-mui-demo",
   "version": "0.1.0",
   "private": true,
   "description": "Demo: AI-powered Material-UI component generation with v0-sdk",
   "keywords": ["v0-sdk", "material-ui", "mui", "nextjs", "react", "ai", "component-generation"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/v0-mui-sdk-demo.git"
+    "url": "https://github.com/your-username/v0-sdk-mui-demo.git"
   },
   "license": "MIT",
   "scripts": {
